@@ -1,0 +1,45 @@
+{
+  "lottery0": [{
+    "result": {
+      "1": 440,
+      "2": 63
+    },
+    "label": "null"
+  }],
+  "unlucky": [{
+    "result": {
+      "1": 440,
+      "2": 2
+    },
+    "label": "null"
+  }],
+  "lottery4": [{
+    "result": {
+      "1": 440,
+      "2": 63
+    },
+    "test": "ok",
+    "label": "null"
+  }],
+  "lottery3": [{
+    "result": {
+      "1": 440,
+      "2": 63
+    },
+    "label": "null"
+  }],
+  "lottery2": [{
+    "result": {
+      "1": 440,
+      "2": 63
+    },
+    "label": "null"
+  }],
+  "lottery1": [{
+    "result": {
+      "1": 440,
+      "2": 63
+    },
+    "label": "null"
+  }]
+}
