@@ -47,6 +47,7 @@ void draw() {
     } else {
         if(!luck.GameStart) {
             progress = 0;
+            ready = false;
         }
         luck.start(progress);
   }
@@ -58,16 +59,17 @@ void keyPressed() {
   if (luck.GameStart == false && (key == 'S' || key == 's')) {  // Start the game 
       ready = true;
       textSize(68);
-      text("Game Start",width/2-300,height/2-100);
+      text("Ready",width/2-300,height/2-100);
       fill(255,255,255);
+      noLoop();
       println("Start the lottery");
       
   } else if (key == ' ') {
       println("Recive the data");
       if(ready) {
+          loop();
           progress++;
-      } else {
-          progress = 0;
+          luck.GameStart = true;
       }
       
   } else if (key == 'R' || key == 'r') {    // Reset the game
@@ -89,12 +91,11 @@ void serialEvent(Serial myPort) {
       myPort.clear();          // clear the serial port buffer
       println("Recive the data from serial");
       
-      if(luck.GameStart == true) {
+      if(ready) {
+          loop();
           progress++;
-      } else {
-          progress = 0;
+          luck.GameStart = true;
       }
-      
     } 
 }
 
@@ -132,6 +133,11 @@ class Lottery{
             JSONObject lottery_data = lottery_name.getJSONObject(0);
             lottery_data.setString("label","null");
             saveJSONObject(json,"data/data.json");
+            if(Lottery_index == 4){
+                if(--lottery4_index <= 0) {
+                    lottery4_index = 0;
+                }
+            }
     }
     void start(int progress) {
         
@@ -182,39 +188,50 @@ class Lottery{
                 println("Start 3");
                 break;
             case 4:                                  // Create 138 results
-                knocktimes = 90;
+                knocktimes = 30;
                 if (progress>=knocktimes) {
+                    
                     if(++lottery4_index >= 4) {
                         lottery4_index = 3;
-                        Result[Lottery_index] = true;
                     }
                     
                     lottery_data.setString("label",lottery4_status[lottery4_index]);
+
                     saveJSONObject(json,"data/data.json");  
                     GameStart = false;
+                    println("Finish the Game number",lottery4_index);
                     println("The Game is over");
-                    Result[Lottery_index] = true;
                 } 
                 
                 if (label.compareTo("null") == 0) {
-                    Create4rdPrize(knock(progress));   
-                    println("Not start the lottery yet");
-                } else if ( label.compareTo("first") == 0){
                     Create4rdPrize(knock(progress));  
-                    println("Already finished the lottery first");
+                    
+                    fill(c1);
+                    rect(width/3-100, height/4*3, progress*(800/knocktimes/3), 55, 7); 
+                    
+                    println("Prepare for the lottery4 first");
+                } else if ( label.compareTo("first") == 0){
+                    Create4rdPrize(knock(progress)); 
+                    
+                    fill(c1);
+                    rect(width/3-100, height/4*3, (800/knocktimes/3+progress*(800/knocktimes/3)), 55, 7); 
+                    
+                    println("Prepare for the lottery4 second");
                 } else if (label.compareTo("second") == 0){
                     Create4rdPrize(knock(progress)); 
-                    println("Already finished the lottery second");
+                    
+                    fill(c1);
+                    rect(width/3-100, height/4*3, (800/knocktimes/3*2+progress*(800/knocktimes/3)), 55, 7); 
+                    
+                    println("Prepare for the lottery4 Thrid");
+                    
                 } else if (label.compareTo("finished") == 0){
                     println("Already finished the lottery");
-                }
-                if(Result[Lottery_index]) {
+                    
                     c1 = color(0,255,240);
                     fill(c1);
                     rect(width/3-100, height/4*3, 800, 55, 7); 
-                } else {
-                    fill(c1);
-                    rect(width/3-100, height/4*3, progress*(800/90), 55, 7); 
+                    
                 }
                 noFill();
                 break;  
@@ -268,6 +285,6 @@ class Lottery{
     }
     // To Judge if the number is already in the list.
     boolean findlist() {     
-        return true;
+        return false;
     }
 }
