@@ -19,7 +19,7 @@ void setup() {
     fullScreen(P3D,2); // Default screen 2 , render 3D 
     for (int i=0; i<5; i++) {
         String s;
-        s = Integer.toString(i)+".png";
+        s = Integer.toString(i)+".jpg";
         println("the file is ",s);
         img[i] = loadImage(s);
         img[i].resize(width,height);
@@ -49,14 +49,14 @@ void draw() {
             progress = 0;
             ready = false;
         }
-        luck.start(progress);
+        luck.start(progress);  // Always run this function
   }
     
 }
 
 void keyPressed() {
   int keyIndex;
-  if (luck.GameStart == false && (key == 'S' || key == 's')) {  // Start the game 
+  if (ready == false && luck.GameStart == false && (key == 'S' || key == 's')) {  // Start the game 
       ready = true;
       textSize(68);
       text("Ready",width/2-300,height/2-100);
@@ -74,11 +74,14 @@ void keyPressed() {
       
   } else if (key == 'R' || key == 'r') {    // Reset the game
       luck.reset();
+      luck.GameStart = false;
       println("Reset the game");
   } else if (luck.GameStart == false && (key >= '0' && key <= '4')) {    // Select the prize
       keyIndex = key - '0';
  
       luck.setIndex(keyIndex);
+  } else {
+       println("the key is",key);
   }
   println("the key is",key);
 }
@@ -90,7 +93,6 @@ void serialEvent(Serial myPort) {
     if (inByte == 0xAA) { 
       myPort.clear();          // clear the serial port buffer
       println("Recive the data from serial");
-      
       if(ready) {
           loop();
           progress++;
@@ -99,6 +101,12 @@ void serialEvent(Serial myPort) {
     } 
 }
 
+class ProcessBar {
+    int width_bar;
+    int length_bar;
+    int coor_x;
+    int coor_y;
+}
 
 class Lottery{
     JSONObject json;
@@ -127,16 +135,23 @@ class Lottery{
     }
     void reset() {
             println("Reset Lottery:",Lottery_index);
-            Result[Lottery_index] = false;
+            
             json = loadJSONObject("data.json");
             JSONArray lottery_name = json.getJSONArray(Lottery_Name[Lottery_index]);
-            JSONObject lottery_data = lottery_name.getJSONObject(0);
-            lottery_data.setString("label","null");
-            saveJSONObject(json,"data/data.json");
+            JSONObject lottery_data = lottery_name.getJSONObject(0);  
+            
             if(Lottery_index == 4){
                 if(--lottery4_index <= 0) {
                     lottery4_index = 0;
                 }
+                
+                lottery_data.setString("label",lottery4_status[lottery4_index]);
+                saveJSONObject(json,"data/data.json");
+                
+            } else {
+                Result[Lottery_index] = false;
+                lottery_data.setString("label","null");
+                saveJSONObject(json,"data/data.json");
             }
     }
     void start(int progress) {
@@ -153,6 +168,12 @@ class Lottery{
         String label = lottery_data.getString("label");
         
         println("The label is :",label);
+        
+        JSONObject lottery_result = lottery_data.getJSONObject("result");
+        // int x = lottery_result.getInt("3");
+        
+        println("The test result number 3 is ",x);
+        
         
         // if (Lottery_index == 4) {
         // } else {
@@ -214,20 +235,18 @@ class Lottery{
                     Create4rdPrize(knock(progress)); 
                     
                     fill(c1);
-                    rect(width/3-100, height/4*3, (800/knocktimes/3+progress*(800/knocktimes/3)), 55, 7); 
+                    rect(width/3-100, height/4*3, (333+progress*(800/knocktimes/3)), 55, 7); 
                     
                     println("Prepare for the lottery4 second");
                 } else if (label.compareTo("second") == 0){
                     Create4rdPrize(knock(progress)); 
-                    
                     fill(c1);
-                    rect(width/3-100, height/4*3, (800/knocktimes/3*2+progress*(800/knocktimes/3)), 55, 7); 
-                    
+                    rect(width/3-100, height/4*3, (666+progress*(800/knocktimes/3)), 55, 7); 
                     println("Prepare for the lottery4 Thrid");
                     
                 } else if (label.compareTo("finished") == 0){
                     println("Already finished the lottery");
-                    
+                    Create4rdPrize(knock(progress)); 
                     c1 = color(0,255,240);
                     fill(c1);
                     rect(width/3-100, height/4*3, 800, 55, 7); 
@@ -257,7 +276,7 @@ class Lottery{
                     fill(255,255,255);
                 }
             }      
-        } else {
+        } else {  // Game Over and store the result
             for(int i=0; i<6; i++) {
                 for (int j=0; j<8; j++) {
                     s = Integer.toString(lucknum4[i][j]);
